@@ -9,5 +9,4 @@ public interface UserService {
     void registerUser(RegisterRequest request);
     String login(LoginRequest request);
     Map<String, Object> getLastLoginInfo(UserPrincipal userPrincipal);
-    void pingDB();
 }

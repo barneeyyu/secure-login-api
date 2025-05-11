@@ -38,4 +38,4 @@ out/
 
 .env
 
-logs/
+logs/app.log*
