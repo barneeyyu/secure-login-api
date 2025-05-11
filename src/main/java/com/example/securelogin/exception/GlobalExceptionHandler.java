@@ -9,10 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.postgresql.util.PSQLException;
+import java.util.NoSuchElementException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.util.stream.Collectors;
 
 @RestControllerAdvice // @RestControllerAdvice 包含了 @ControllerAdvice 和 @ResponseBody
@@ -71,6 +71,35 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * 處理由 Service 層拋出的 IllegalArgumentException 和 IllegalStateException。
+         * 這些異常已經包含了 HTTP 狀態碼和原因。
+         */
+        @ResponseStatus(HttpStatus.BAD_REQUEST)
+        @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
+        public ErrorResponse handleIllegalArgumentException(Exception ex, HttpServletRequest request) {
+                logger.warn("IllegalArgumentException at URI {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                return new ErrorResponse(
+                                400,
+                                ex.getMessage());
+        }
+
+        /**
+         * 處理找不到元素的異常。
+         * 這些異常已經包含了 HTTP 狀態碼和原因。
+         */
+        @ResponseStatus(HttpStatus.NOT_FOUND)
+        @ExceptionHandler(NoSuchElementException.class)
+        public ErrorResponse handleNoSuchElementException(NoSuchElementException ex,
+                        HttpServletRequest request) {
+                logger.warn("NoSuchElementException at URI {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                // Typically, "not found" maps to HTTP 404
+                ErrorResponse errorResponse = new ErrorResponse(
+                                HttpStatus.NOT_FOUND.value(),
+                                ex.getMessage());
+                return errorResponse;
+        }
+
+        /**
          * 處理其他未被特定處理器捕獲的通用異常。
          * 這是一個很好的兜底機制。
          */
@@ -79,8 +108,16 @@ public class GlobalExceptionHandler {
         public ErrorResponse handleGenericException(Exception ex, HttpServletRequest request) {
                 logger.error("An unexpected error occurred at URI {}: {}", request.getRequestURI(), ex.getMessage(),
                                 ex);
+                String errorMessage = "An unexpected error occurred. Please try again later.";
+                String specificMessage = ex.getMessage();
+
+                // 如果異常訊息不為空，則將其附加到通用訊息中，或用更具體的訊息
+                if (specificMessage != null && !specificMessage.trim().isEmpty()) {
+                        errorMessage = "Error: " + specificMessage;
+                }
+
                 return new ErrorResponse(
                                 500,
-                                "An unexpected error occurred. Please try again later.");
+                                errorMessage);
         }
 }

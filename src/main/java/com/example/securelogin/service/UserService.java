@@ -7,6 +7,10 @@ import java.util.Map;
 
 public interface UserService {
     void registerUser(RegisterRequest request);
+
+    void verifyEmail(String tokenValue);
+
     String login(LoginRequest request);
+
     Map<String, Object> getLastLoginInfo(UserPrincipal userPrincipal);
 }

@@ -19,3 +19,10 @@ logging:
     root: INFO
   file:
     name: logs/app.log
+
+# Mailjet Configuration
+mailjet:
+  api-key: ${MAILJET_API_KEY}
+  secret-key: ${MAILJET_SECRET_KEY}
+  sender-email: ${MAILJET_SENDER_EMAIL} # 你在 Mailjet 設定的發信人 Email
+  sender-name: ${MAILJET_SENDER_NAME} # 發信人名稱
