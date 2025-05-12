@@ -12,6 +12,7 @@ import com.example.securelogin.dto.RegisterRequest;
 import com.example.securelogin.dto.LoginRequest;
 import com.example.securelogin.dto.LoginVerifyRequest;
 import com.example.securelogin.dto.LoginVerifyResponse;
+import com.example.securelogin.dto.LastLoginResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.transaction.Transactional;
@@ -186,6 +187,17 @@ public class UserServiceImpl implements UserService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
+                .build();
+    }
+
+    @Transactional
+    @Override
+    public LastLoginResponse getLastLoginInfo(User user) {
+        Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
+        User resultUser = userOptional.get();
+        return LastLoginResponse.builder()
+                .email(resultUser.getEmail())
+                .lastLoginTime(resultUser.getLastLoginAt().toString())
                 .build();
     }
 }

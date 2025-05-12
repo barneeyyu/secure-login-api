@@ -4,6 +4,7 @@ import com.example.securelogin.service.UserService;
 
 import com.example.securelogin.dto.RegisterRequest;
 import com.example.securelogin.dto.SuccessResponse;
+import com.example.securelogin.entity.User;
 import com.example.securelogin.dto.LoginRequest;
 import com.example.securelogin.dto.LoginVerifyRequest;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @RestController
 @RequestMapping("/api")
@@ -56,10 +58,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(userService.loginVerify(request));
     }
 
-    // // 查詢自己的最後登入時間（需身份驗證）
-    // @GetMapping("/user/last-login")
-    // public ResponseEntity<?> getLastLogin(@AuthenticationPrincipal UserPrincipal
-    // userPrincipal) {
-    // return ResponseEntity.ok().body(userService.getLastLoginInfo(userPrincipal));
-    // }
+    // 查詢自己的最後登入時間（需身份驗證）
+    @GetMapping("/user/last-login")
+    public ResponseEntity<?> getLastLogin(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok().body(userService.getLastLoginInfo(user));
+    }
 }
