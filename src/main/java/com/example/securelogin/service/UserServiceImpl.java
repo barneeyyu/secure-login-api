@@ -4,13 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.securelogin.repository.UserRepository;
 import com.example.securelogin.repository.EmailVerificationTokenRepository;
+import com.example.securelogin.security.JwtService;
 import com.example.securelogin.entity.User;
 import com.example.securelogin.entity.EmailVerificationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.securelogin.dto.RegisterRequest;
 import com.example.securelogin.dto.LoginRequest;
-import com.example.securelogin.security.UserPrincipal;
-import java.util.Map;
+import com.example.securelogin.dto.LoginVerifyRequest;
+import com.example.securelogin.dto.LoginVerifyResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.transaction.Transactional;
@@ -18,6 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.Optional;
 import java.util.NoSuchElementException;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,26 +29,24 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final EmailVerificationTokenRepository tokenRepository;
+    private final TwoFactorAuthService twoFactorAuthService;
+    private final JwtService jwtService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService,
-            EmailVerificationTokenRepository tokenRepository) {
+            EmailVerificationTokenRepository tokenRepository, TwoFactorAuthService twoFactorAuthService,
+            JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.tokenRepository = tokenRepository;
+        this.twoFactorAuthService = twoFactorAuthService;
+        this.jwtService = jwtService;
     }
 
     @Transactional
     @Override
     public void registerUser(RegisterRequest request) {
-        // 在真實的應用中，這裡會包含：
-        // 1. 檢查 Email 是否已存在 (如果存在，可能會拋出 EmailAlreadyExistsException)
-        // 2. 密碼雜湊
-        // 3. 建立 User 實體
-        // 4. 儲存到資料庫
-        // 5. 可能發送驗證郵件等
-
         // 1. 建立 User 實體並儲存
         User user = new User();
         user.setEmail(request.getEmail());
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void verifyEmail(String tokenValue) {
+    public void verifyRegistration(String tokenValue) {
         logger.info("Attempting to verify email with token: {}", tokenValue);
 
         // 1. 查找權杖
@@ -125,15 +125,67 @@ public class UserServiceImpl implements UserService {
         logger.info("Verification token {} has been deleted after successful verification.", tokenValue);
     }
 
+    @Transactional
     @Override
-    public String login(LoginRequest request) {
-        // TODO: 實作登入邏輯
-        return null;
+    public void login(LoginRequest request) {
+        logger.info("Attempting login for user: {}", request.getEmail());
+
+        // 1. 根據電子郵件查找使用者
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+
+        if (userOptional.isEmpty()) {
+            logger.warn("Login failed: User not found with email: {}", request.getEmail());
+            throw new NoSuchElementException("the email is not registered");
+        }
+
+        User user = userOptional.get();
+
+        // 2. 檢查電子郵件是否已驗證
+        if (!user.isEmailVerified()) {
+            logger.warn("Login failed: Email not verified for user: {}", request.getEmail());
+            throw new IllegalStateException("Your email is not verified, please verify your email.");
+        }
+
+        // 3. 驗證密碼
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            logger.warn("Login failed: Invalid password for user: {}", request.getEmail());
+            throw new BadCredentialsException("password is incorrect.");
+        }
+
+        // 4. 啟用兩步驟驗證，產生驗證碼
+        String plainCode = twoFactorAuthService.createNewCode(user);
+        logger.info("Two-factor authentication code generated for user: {}", plainCode); // 先把驗證碼印出來，等寄信功能好了再刪掉
+
+        // 5. 發送驗證碼到使用者
+        // String codeString = code.getCode();
+        // String recipientName = user.getEmail().split("@")[0];
+        // emailService.sendTwoFactorCode(user.getEmail(), recipientName, codeString);
+
+        // 如果執行到這裡，表示帳號密碼驗證成功
+        logger.info("User {} logged in successfully.", user.getEmail());
     }
 
+    @Transactional
     @Override
-    public Map<String, Object> getLastLoginInfo(UserPrincipal userPrincipal) {
-        // TODO: 實作取得登入資訊邏輯
-        return null;
+    public LoginVerifyResponse loginVerify(LoginVerifyRequest request) {
+
+        Boolean isCodeValid = twoFactorAuthService.verifyCode(request.getEmail(), request.getCode());
+
+        if (!isCodeValid) {
+            throw new BadCredentialsException("Invalid verification code");
+        }
+
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+        User user = userOptional.get();
+        user.setLastLoginAt(OffsetDateTime.now());
+        userRepository.save(user);
+        String accessToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        return LoginVerifyResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .build();
     }
 }

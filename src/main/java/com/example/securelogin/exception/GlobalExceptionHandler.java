@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.postgresql.util.PSQLException;
 import java.util.NoSuchElementException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -97,6 +98,20 @@ public class GlobalExceptionHandler {
                                 HttpStatus.NOT_FOUND.value(),
                                 ex.getMessage());
                 return errorResponse;
+        }
+
+        /**
+         * 處理 BadCredentialsException 異常。
+         * 這些異常已經包含了 HTTP 狀態碼和原因。
+         */
+        @ResponseStatus(HttpStatus.UNAUTHORIZED)
+        @ExceptionHandler(BadCredentialsException.class)
+        public ErrorResponse handleBadCredentialsException(BadCredentialsException ex,
+                        HttpServletRequest request) {
+                logger.warn("BadCredentialsException at URI {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                return new ErrorResponse(
+                                401,
+                                ex.getMessage());
         }
 
         /**

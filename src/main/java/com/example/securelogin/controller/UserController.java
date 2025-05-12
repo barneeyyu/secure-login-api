@@ -4,6 +4,8 @@ import com.example.securelogin.service.UserService;
 
 import com.example.securelogin.dto.RegisterRequest;
 import com.example.securelogin.dto.SuccessResponse;
+import com.example.securelogin.dto.LoginRequest;
+import com.example.securelogin.dto.LoginVerifyRequest;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // 註冊：寄送驗證信
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         logger.info("Controller: Received registration request for email: {}", request.getEmail());
@@ -38,18 +39,22 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(successResponse);
     }
 
-    @GetMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestParam("token") String tokenValue) {
-        userService.verifyEmail(tokenValue);
+    @GetMapping("/verify-registration")
+    public ResponseEntity<?> verifyRegistration(@RequestParam("token") String tokenValue) {
+        userService.verifyRegistration(tokenValue);
         return ResponseEntity.ok("Email verified successfully");
     }
 
-    // @PostMapping("/login")
-    // public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request)
-    // {
-    // String jwtToken = userService.login(request);
-    // return ResponseEntity.ok(new LoginResponse(jwtToken));
-    // }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        userService.login(request);
+        return ResponseEntity.ok("Go to your email to get the verification code");
+    }
+
+    @PostMapping("/login-verify")
+    public ResponseEntity<?> loginVerify(@Valid @RequestBody LoginVerifyRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.loginVerify(request));
+    }
 
     // // 查詢自己的最後登入時間（需身份驗證）
     // @GetMapping("/user/last-login")

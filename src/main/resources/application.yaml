@@ -9,6 +9,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    format_sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
@@ -19,6 +20,11 @@ logging:
     root: INFO
   file:
     name: logs/app.log
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}          # JWT Token 有效期 (例如：24 小時，單位毫秒)
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION} # Refresh Token 有效期 (例如：7 天，單位毫秒)
 
 # Mailjet Configuration
 mailjet:

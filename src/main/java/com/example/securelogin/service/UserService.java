@@ -2,15 +2,15 @@ package com.example.securelogin.service;
 
 import com.example.securelogin.dto.RegisterRequest;
 import com.example.securelogin.dto.LoginRequest;
-import com.example.securelogin.security.UserPrincipal;
-import java.util.Map;
+import com.example.securelogin.dto.LoginVerifyRequest;
+import com.example.securelogin.dto.LoginVerifyResponse;
 
 public interface UserService {
     void registerUser(RegisterRequest request);
 
-    void verifyEmail(String tokenValue);
+    void verifyRegistration(String tokenValue);
 
-    String login(LoginRequest request);
+    void login(LoginRequest request);
 
-    Map<String, Object> getLastLoginInfo(UserPrincipal userPrincipal);
+    LoginVerifyResponse loginVerify(LoginVerifyRequest request);
 }
