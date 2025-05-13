@@ -5,10 +5,10 @@ A Spring Boot RESTful API for user registration, login (with 2FA email verificat
 ## 🚀 Features
 
 - 使用 Email 註冊帳號，需驗證 Email 開通帳號
-- 登入需輸入帳號密碼 + Email 驗證碼（二階段驗證）
-- 使用者可查詢「自己的」最後登入時間（無法查詢他人）
+- 登入需輸入帳號密碼 + Email 驗證碼（二階段驗證），驗證成功會產生 JWT token
+- 使用者可查詢「自己的」最後登入時間，無法查詢他人（需JWT access token驗證）
 - 使用 Mailjet API 發送驗證信
-- 可部署於 AWS Elastic Beanstalk 或其他雲端環境
+- 此服務部署於 AWS Elastic Beanstalk
 
 ---
 
@@ -20,6 +20,10 @@ API 支援標準 RESTful 呼叫，並提供 Swagger UI 文件頁面。
 
 - 開發環境 URL：`http://localhost:8080/swagger-ui/index.html`
 - 部署後 URL：`http://Secure-login-api-env-1.eba-ng8unjmn.us-east-1.elasticbeanstalk.com/swagger-ui/index.html`
+
+### 🧪 Postman Collection Test
+
+[下載 Postman Collection (v2.1)](docs/postman/SecureLoginAPI.postman_collection.json)
 
 ---
 

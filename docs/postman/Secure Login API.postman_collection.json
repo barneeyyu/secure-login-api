@@ -1,0 +1,172 @@
+{
+	"info": {
+		"_postman_id": "9de0142b-ace4-4691-bcdc-e7cf34311268",
+		"name": "Secure Login API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13499979"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"example@test.com\",\n    \"password\": \"123456789\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://Secure-login-api-env-1.eba-ng8unjmn.us-east-1.elasticbeanstalk.com/api/register",
+					"protocol": "http",
+					"host": [
+						"Secure-login-api-env-1",
+						"eba-ng8unjmn",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verify Registration",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://Secure-login-api-env-1.eba-ng8unjmn.us-east-1.elasticbeanstalk.com/api/verify-registration?token={your_token}",
+					"protocol": "http",
+					"host": [
+						"Secure-login-api-env-1",
+						"eba-ng8unjmn",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"api",
+						"verify-registration"
+					],
+					"query": [
+						{
+							"key": "token",
+							"value": "{your_token}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"example@test.com\",\n    \"password\": \"123456789\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://Secure-login-api-env-1.eba-ng8unjmn.us-east-1.elasticbeanstalk.com/api/login",
+					"protocol": "http",
+					"host": [
+						"Secure-login-api-env-1",
+						"eba-ng8unjmn",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login Verification",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"example@test.com\",\n    \"code\": \"000000\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://Secure-login-api-env-1.eba-ng8unjmn.us-east-1.elasticbeanstalk.com/api/login-verify",
+					"protocol": "http",
+					"host": [
+						"Secure-login-api-env-1",
+						"eba-ng8unjmn",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"api",
+						"login-verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Last Login",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{bearer token}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://Secure-login-api-env-1.eba-ng8unjmn.us-east-1.elasticbeanstalk.com/api/user/last-login",
+					"protocol": "http",
+					"host": [
+						"Secure-login-api-env-1",
+						"eba-ng8unjmn",
+						"us-east-1",
+						"elasticbeanstalk",
+						"com"
+					],
+					"path": [
+						"api",
+						"user",
+						"last-login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
