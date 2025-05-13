@@ -195,6 +195,9 @@ public class UserServiceImpl implements UserService {
     public LastLoginResponse getLastLoginInfo(User user) {
         Optional<User> userOptional = userRepository.findByEmail(user.getEmail());
         User resultUser = userOptional.get();
+        if (resultUser.getLastLoginAt() == null) {
+            throw new NoSuchElementException("User has not logged in yet");
+        }
         return LastLoginResponse.builder()
                 .email(resultUser.getEmail())
                 .lastLoginTime(resultUser.getLastLoginAt().toString())
