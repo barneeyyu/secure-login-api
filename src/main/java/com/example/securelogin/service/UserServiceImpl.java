@@ -21,6 +21,9 @@ import java.util.UUID;
 import java.util.Optional;
 import java.util.NoSuchElementException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -34,7 +37,8 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService,
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            @Qualifier("gmailService") EmailService emailService,
             EmailVerificationTokenRepository tokenRepository, TwoFactorAuthService twoFactorAuthService,
             JwtService jwtService) {
         this.userRepository = userRepository;
@@ -65,8 +69,7 @@ public class UserServiceImpl implements UserService {
 
         // 3. 發送驗證郵件
         String recipientName = user.getEmail().split("@")[0]; // split email from "@"
-        // emailService.sendVerificationEmail(user.getEmail(), recipientName,
-        // "http://localhost:8080/verify-email?token=" + tokenString);
+        emailService.sendRegistrationVerificationEmail(user.getEmail(), recipientName, tokenString);
         logger.info("User registered successfully with ID: {}, recipientName: {}", user.getId(), recipientName);
     }
 
@@ -158,9 +161,8 @@ public class UserServiceImpl implements UserService {
         logger.info("Two-factor authentication code generated for user: {}", plainCode); // 先把驗證碼印出來，等寄信功能好了再刪掉
 
         // 5. 發送驗證碼到使用者
-        // String codeString = code.getCode();
-        // String recipientName = user.getEmail().split("@")[0];
-        // emailService.sendTwoFactorCode(user.getEmail(), recipientName, codeString);
+        String recipientName = user.getEmail().split("@")[0];
+        emailService.sendLoginVerificationCodeEmail(user.getEmail(), recipientName, plainCode);
 
         // 如果執行到這裡，表示帳號密碼驗證成功
         logger.info("User {} logged in successfully.", user.getEmail());
@@ -198,9 +200,16 @@ public class UserServiceImpl implements UserService {
         if (resultUser.getLastLoginAt() == null) {
             throw new NoSuchElementException("User has not logged in yet");
         }
+
+        // handle timezone
+        ZoneId tz = ZoneId.of("Asia/Taipei");
+        OffsetDateTime loginAt = resultUser.getLastLoginAt();
+        String localTimeFormatted = loginAt
+                .atZoneSameInstant(tz) // ★ 時區轉換核心
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS Z"));
         return LastLoginResponse.builder()
                 .email(resultUser.getEmail())
-                .lastLoginTime(resultUser.getLastLoginAt().toString())
+                .lastLoginTime(localTimeFormatted)
                 .build();
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.postgresql.util.PSQLException;
 import java.util.NoSuchElementException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -112,6 +113,20 @@ public class GlobalExceptionHandler {
                 return new ErrorResponse(
                                 401,
                                 ex.getMessage());
+        }
+
+        /**
+         * 處理 EmailSendingException 異常。
+         * 這些異常已經包含了 HTTP 狀態碼和原因。
+         */
+        @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+        @ExceptionHandler(MailException.class)
+        public ErrorResponse handleMailException(MailException ex, HttpServletRequest request) {
+                logger.error("MailException at URI {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+                String errorMessage = "Failed to send verification email. Please try again later. The error message is: ";
+                return new ErrorResponse(
+                                500,
+                                errorMessage + ex.getMessage());
         }
 
         /**

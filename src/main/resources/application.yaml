@@ -1,4 +1,17 @@
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GMAIL_USERNAME}
+    password: ${GMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    from: ${GMAIL_USERNAME} # 可選: 設定預設寄件人 (如果郵件中沒有明確設定 from)
+    
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -17,7 +30,7 @@ server:
 
 logging:
   level:
-    root: INFO
+    root: DEBUG
   file:
     name: logs/app.log
 
@@ -32,3 +45,6 @@ mailjet:
   secret-key: ${MAILJET_SECRET_KEY}
   sender-email: ${MAILJET_SENDER_EMAIL} # 你在 Mailjet 設定的發信人 Email
   sender-name: ${MAILJET_SENDER_NAME} # 發信人名稱
+
+app:
+  base-url: ${BASE_URL}

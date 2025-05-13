@@ -23,7 +23,7 @@ API 支援標準 RESTful 呼叫，並提供 Swagger UI 文件頁面。
 
 ### 🧪 Postman Collection Test
 
-[下載 Postman Collection (v2.1)](docs/postman/SecureLoginAPI.postman_collection.json)
+[下載 Postman Collection (v2.1)](docs/postman/Secure_Login_API.postman_collection.json)
 
 ---
 
